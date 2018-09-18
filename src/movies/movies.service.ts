@@ -1,43 +1,39 @@
-import { Injectable, HttpException } from '@nestjs/common';
-import { MOVIES } from './../mocks/movies.mock';
+import { Injectable } from '@nestjs/common';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { Movie } from './interfaces/movie.interface';
+import { CreateMovieDTO } from './dto/create-movie.dto';
 
 @Injectable()
 export class MoviesService {
-    movies = MOVIES;
+    constructor(@InjectModel('Movie') private readonly movieModel: Model<Movie>){}
 
-    getMovies(): Promise<any> {
-        return new Promise(resolve => {
-            resolve(this.movies);
-        });
+    async getMovies(): Promise<Movie[]> {
+        const movies = await this.movieModel.find().exec();
+        return movies;
     }
 
-    getMovie(movieID): Promise<any> {
-        let id = Number(movieID);
-        return new Promise(resolve => {
-            const movieTemp = this.movies.find(movie => movie.id === id);
-            if (!movieTemp) {
-                throw new HttpException('Movie does not exist!', 404);
-            }
-            resolve(movieTemp);
-        });
+    async getMovie(movieID): Promise<Movie> {
+        const fetchedMovie = await this.movieModel
+            .findById(movieID)
+            .exec();
+        return fetchedMovie;
     }
 
-    addMovie(movie): Promise<any> {
-        return new Promise(resolve => {
-            this.movies.push(movie);
-            resolve(this.movies);
-        });
+    async addMovie(createMovieDTO: CreateMovieDTO): Promise<Movie> {
+       const addedMovie = await this.movieModel(createMovieDTO);
+       return addedMovie.save();
     }
 
-    deleteMovie(movieID): Promise<any> {
-        let id = Number(movieID);
-        return new Promise(resolve => {
-            let index = this.movies.findIndex(movie => movie.id === id);
-            if (index === -1) {
-                throw new HttpException('Movie does not exist!', 404);
-            }
-            this.movies.splice(index, 1);
-            resolve(this.movies);
-        });
+    async updateMovie(movieID, createMovieDTO: CreateMovieDTO): Promise<Movie> {
+        const updatedMovie = await this.movieModel
+            .findByIdAndUpdate(movieID, createMovieDTO, {new: true});
+        return updatedMovie;
+    }
+
+    async deleteMovie(movieID): Promise<Movie> {
+        const deletedMovie = await this.movieModel
+            .findByIdAndRemove(movieID);
+        return deletedMovie;
     }
 }

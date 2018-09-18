@@ -1,10 +1,8 @@
 # movie-project
 
 ## Description
+Basic CRUD: Movie Demo Project with MongoDB
 
-Movie Demo Project
-
-A project demo for this video: https://youtu.be/CLZHvvuvCqA
 ## Installation
 
 ```bash
